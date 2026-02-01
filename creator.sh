@@ -51,13 +51,16 @@ if [ "$service" == "frontend" ]; then
     --query 'Reservations[].Instances[].PublicIpAddress' \
     --output text)
   DNS_RECORD=$service.$DOMAIN_NAME
+  echo -e " IP Address of the ${service} is $IP"
 else
   IP=$(aws ec2 describe-instances \
     --filters "Name=instance-id,Values=$INSTANCE_ID" \
     --query 'Reservations[].Instances[].PrivateIpAddress' \
     --output text)
   DNS_RECORD=$service.$DOMAIN_NAME
+  echo -e " IP Address of the ${service} is $IP"
 fi
+
 
 aws route53 change-resource-record-sets --hosted-zone-id $ZONE_ID --change-batch "{
   \"Comment\": \"Creating A record for $service\",
