@@ -8,7 +8,7 @@ C="\e[36m"
 N="\e[0m"
 
 USER_ID=$(id -u)
-SCRIPT_DIR=$pwd 
+SCRIPT_DIR=$(pwd) 
 LOG_FOLDER="/var/log/Expense-Project-LOGS"
 LOG_FILE="$LOG_FOLDER/$0.log"
 MYSQL_HOST="mysql.opsora.space"
