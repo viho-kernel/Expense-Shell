@@ -47,7 +47,7 @@ VALIDATE $? "Updating openssh package"
 
 id expense 
 if [ $? -ne 0 ]; then
-  useradd --system --home /app --shell /sib/nologin --comment "expense system user" expense
+  useradd --system --home /app --shell /sbin/nologin --comment "expense system user" expense
 else
    echo -e "$R User already present. $Y Hence, skipping the creaation of user. $N"
 fi
