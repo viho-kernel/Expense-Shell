@@ -50,7 +50,7 @@ if [ "$service" == "frontend" ]; then
     --filters "Name=instance-id,Values=$INSTANCE_ID" \
     --query 'Reservations[].Instances[].PublicIpAddress' \
     --output text)
-  DNS_RECORD=$service.$DOMAIN_NAME
+  DNS_RECORD=$DOMAIN_NAME
   echo -e " IP Address of the ${service} is $IP"
 else
   IP=$(aws ec2 describe-instances \

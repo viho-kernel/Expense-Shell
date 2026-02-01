@@ -82,7 +82,7 @@ systemctl enable backend &>> $LOG_FILE
 dnf install mysql -y &>> $LOG_FILE
 VALIDATE $? "Installing mysql"
 
-mysql -h $MYSQL_HOST -uroot -p${password} < /app/schema/backend.sql
+mysql -h mysql.opsora.space -uroot -pExpenseApp@1 < /app/schema/backend.sql
 
 VALIDATE $? "Loading Schema to root database"
 
