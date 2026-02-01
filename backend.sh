@@ -45,7 +45,8 @@ VALIDATE $? "Installing Nodejs"
 dnf update -y openssh openssh-server openssh-clients &>> $LOG_FILE
 VALIDATE $? "Updating openssh package"
 
-id expense 
+id expense &>> $LOG_FILE
+
 if [ $? -ne 0 ]; then
   useradd --system --home /app --shell /sbin/nologin --comment "expense system user" expense
 else

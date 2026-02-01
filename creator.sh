@@ -62,21 +62,26 @@ else
 fi
 
 
-aws route53 change-resource-record-sets --hosted-zone-id $ZONE_ID --change-batch "{
-  \"Comment\": \"Creating A record for $service\",
-  \"Changes\": [
+aws route53 change-resource-record-sets \
+    --hosted-zone-id $ZONE_ID \
+    --change-batch '
     {
-      \"Action\": \"CREATE\",
-      \"ResourceRecordSet\": {
-        \"Name\": \"$DNS_RECORD\",
-        \"Type\": \"A\",
-        \"TTL\": 60,
-        \"ResourceRecords\": [
-          { \"Value\": \"$IP\" }
+        "Comment": "Updating record",
+        "Changes": [
+            {
+            "Action": "UPSERT",
+            "ResourceRecordSet": {
+                "Name": "'$RECORD_NAME'",
+                "Type": "A",
+                "TTL": 1,
+                "ResourceRecords": [
+                {
+                    "Value": "'$IP'"
+                }
+                ]
+            }
+            }
         ]
-      }
     }
-  ]
-}"
 
 done
