@@ -54,7 +54,7 @@ unzip /tmp/frontend.zip &>> $LOG_FILE
 VALIDATE $? "Unzipping the code."
 
 
-cp $SCRIPT_DIR/frontend.conf /etc/nginx/default.d/expense.conf &>> $LOG_FILE
+cp $SCRIPT_DIR/frontend.conf /etc/nginx/default.d/expense.conf
 VALIDATE $? "Copying the code."
 
 systemctl restart nginx &>> $LOG_FILE
