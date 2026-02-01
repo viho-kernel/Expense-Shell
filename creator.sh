@@ -62,7 +62,7 @@ else
 fi
 
 
-aws route53 change-resource-record-sets \
+  aws route53 change-resource-record-sets \
     --hosted-zone-id $ZONE_ID \
     --change-batch '
     {
@@ -83,5 +83,7 @@ aws route53 change-resource-record-sets \
             }
         ]
     }
+    '
 
+    echo "record updated for $service"
 done
