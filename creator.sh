@@ -25,7 +25,7 @@ if [ -n "$EXISTING_ID" ]; then
        INSTANCE_ID=$EXISTING_ID
   echo -e " $G ${service} instance is already present. $Y Skipping Creation.. $N "
 else
-  if [ "$service" == "mysql" ]; then
+  if [ "$service" == "mysql" ] || [ "$service" == "backend" ]; then
     INSTANCE_ID=$(aws ec2 run-instances \
     --image-id $AMI_ID \
     --instance-type t3.medium \
