@@ -71,7 +71,7 @@ aws route53 change-resource-record-sets \
             {
             "Action": "UPSERT",
             "ResourceRecordSet": {
-                "Name": "'$RECORD_NAME'",
+                "Name": "'$DNS_RECORD'",
                 "Type": "A",
                 "TTL": 1,
                 "ResourceRecords": [
