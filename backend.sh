@@ -47,9 +47,9 @@ VALIDATE $? "Updating openssh package"
 
 id expense 
 if [ $? -ne 0 ]; then
- echo -e " $R User already existed. $Y Hence, Skipping user creation $N"
+  useradd --system --home /app --shell /sib/nologin --comment "expense system user" expense
 else
-   useradd --system --home /app --shell /sib/nologin --comment "expense system user" expense
+   echo -e "$R User already present. $Y Hence, skipping the creaation of user. $N"
 fi
 
 mkdir -p /app &>> $LOG_FILE
@@ -60,7 +60,7 @@ VALIDATE $? "Downloading application code"
 
 cd /app
 
-unzip /tmp/backend.zip
+unzip /tmp/backend.zip &>> $LOG_FILE
 
 
 npm install &>> $LOG_FILE
