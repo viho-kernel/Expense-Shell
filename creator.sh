@@ -16,50 +16,50 @@ N="\e[0m"
 
 for service in $@
 do
-EXISTING_ID=$(aws ec2 describe-instances \
-  --filters "Name=tag:Name,Values=$service" "Name=instance-state-name,Values=running" \
-  --query 'Reservations[].Instances[].InstanceId' \
-  --output text)
+   EXISTING_ID=$(aws ec2 describe-instances \
+    --filters "Name=tag:Name,Values=$instance" "Name=instance-state-name,Values=running,pending" \
+    --query 'Reservations[*].Instances[*].InstanceId' \
+    --output text)
 
 if [ -n "$EXISTING_ID" ]; then
-  INSTANCE_ID=$EXISTING_ID
+       INSTANCE_ID=$EXISTING_ID
   echo -e " $G ${service} instance is already present. $Y Skipping Creation.. $N "
-  continue
 else
   if [ "$service" == "mysql" ]; then
     INSTANCE_ID=$(aws ec2 run-instances \
-      --image-id $AMI_ID \
-      --instance-type t3.medium \
-      --security-group-ids $SG_ID \
-      --tag-specifications "ResourceType=instance,Tags=[{Key=Name,Value=$service}]" \
-      --query 'Instances[0].InstanceId' \
-      --output text)
+    --image-id $AMI_ID \
+    --instance-type t3.medium \
+    --security-group-ids $SG_ID \
+    --tag-specifications "ResourceType=instance,Tags=[{Key=Name,Value=$service}]" \
+    --query 'Instances[0].InstanceId' \
+    --output text)
   else
     INSTANCE_ID=$(aws ec2 run-instances \
-      --image-id $AMI_ID \
-      --instance-type t3.micro \
-      --security-group-ids $SG_ID \
-      --tag-specifications "ResourceType=instance,Tags=[{Key=Name,Value=$service}]" \
-      --query 'Instances[0].InstanceId' \
-      --output text)
+    --image-id $AMI_ID \
+    --instance-type t3.micro \
+    --security-group-ids $SG_ID \
+    --tag-specifications "ResourceType=instance,Tags=[{Key=Name,Value=$service}]" \
+    --query 'Instances[0].InstanceId' \
+    --output text)
   fi
+  echo "Instance ID of ${service} is ${INSTANCE_ID}"
 fi
 
-if [ "$service" == "frontend" ]; then
+if [ $service == 'frontend' ]; then
   IP=$(aws ec2 describe-instances \
     --filters "Name=instance-id,Values=$INSTANCE_ID" \
     --query 'Reservations[].Instances[].PublicIpAddress' \
     --output text)
   DNS_RECORD=$DOMAIN_NAME
-  echo -e " IP Address of the ${service} is $IP"
 else
   IP=$(aws ec2 describe-instances \
     --filters "Name=instance-id,Values=$INSTANCE_ID" \
     --query 'Reservations[].Instances[].PrivateIpAddress' \
     --output text)
   DNS_RECORD=$service.$DOMAIN_NAME
-  echo -e " IP Address of the ${service} is $IP"
+  
 fi
+  echo -e " IP Address of the ${service} is $IP"
 
 
   aws route53 change-resource-record-sets \
