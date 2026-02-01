@@ -20,42 +20,41 @@ do
     aws ec2 describe-instances \
      --filters "Name=tag:Name,Values=$service" \
      "Name=instance-state-name,Values=running"
-   )
+     --query 'Reservations[].Instances[].InstanceId' \ 
+     --output text)
 
    if [ -n "${EXISTING_ID}" ]; then
       INSTANCE_ID=$EXISTING_ID
       echo -e " $G ${service} instance is already present. $Y Skipping Creation.. $N "
-      exit 1
+      continue
    else
-      if [ "$service" == "mysql" ]; then
-
+    if [ "$service" == "mysql" ]; then
     INSTANCE_ID=$(aws ec2 run-instances \
     --image-id $AMI_ID \
     --instance-type t3.medium \
     --security-group-ids $SG_ID \
-    --tag-specifications "ResourceType=instance,Tags=[{Key=Name,Value=$instance}]" \
-    --query 'Instances[0].InstanceId'
+    --tag-specifications "ResourceType=instance,Tags=[{Key=Name,Value=$service}]" \
+    --query 'Instances[0].InstanceId' \
     --output text)
     else 
     INSTANCE_ID=$(aws ec2 run-instances \
     --image-id $AMI_ID \
     --instance-type t3.micro \
     --security-group-ids $SG_ID \
-    --tag-specifications "ResourceType=instance,Tags=[{Key=Name,Value=$instance}]" \
+    --tag-specifications "ResourceType=instance,Tags=[{Key=Name,Value=$service}]" \
     --query 'Instances[0].InstanceId' \
-    --output text
-    )
+    --output text)
     fi
 fi
 
-if [ $INSTANCE_ID == 'frontend' ]; then
+if [ "$service" == 'frontend' ]; then
     IP=$(
      aws ec2 describe-instances \
     --filters "Name=instance-id,Values=$INSTANCE_ID" \
     --query 'Reservations[].Instances[].PublicIpAddress' \
     --output text
     )
-    DNS_RECORD=$service.$DOMAIN_NAME
+    DNS_RECORD=$DOMAIN_NAME
 
     else
     IP=$(
@@ -64,32 +63,29 @@ if [ $INSTANCE_ID == 'frontend' ]; then
     --query 'Reservations[].Instances[].PrivateIpAddress' \
     --output text
     )
-    DNS_RECORD=$DOMAIN_NAME
+    DNS_RECORD=$service.$DOMAIN_NAME
 fi
 
-aws route53 change-resource-record-sets --hosted-zone-id Z1R8UBAEXAMPLE --change-batch '
+aws route53 change-resource-record-sets --hosted-zone-id $ZONE_ID --change-batch "
 
 {
-  "Comment": "Creating A record for ${service}",
-  "Changes": [
+  \"Comment\": \"Creating A record for $service\",
+  \"Changes\": [
     {
-      "Action": "CREATE",
-      "ResourceRecordSet": {
-        "Name": "'${DNS_RECORD}'",
-        "Type": "A",
-        "TTL": 1,
-        "ResourceRecords": [
-          {
-            "Value": "'$IP'"
-          }
+      \"Action\": \"CREATE\",
+      \"ResourceRecordSet\": {
+        \"Name\": \"$DNS_RECORD\",
+        \"Type\": \"A\",
+        \"TTL\": 60,
+        \"ResourceRecords\": [
+          { \"Value\": \"$IP\" }
         ]
       }
     }
   ]
 }
 
-'
-
+"
 echo "record updated for $service"
 
 
