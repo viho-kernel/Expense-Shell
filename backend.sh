@@ -45,10 +45,9 @@ VALIDATE $? "Installing Nodejs"
 dnf update -y openssh openssh-server openssh-clients &>> $LOG_FILE
 VALIDATE $? "Updating openssh package"
 
-id expense &>> $LOG_FILE 
-
+id expense 
 if [ $? -ne 0 ]; then
- echo -e " $R User already exissted. Hence, $Y Skipping user creation $N"
+ echo -e " $R User already existed. $Y Hence, Skipping user creation $N"
 else
    useradd --system --home /app --shell /sib/nologin --comment "expense system user" expense
 fi
@@ -66,6 +65,8 @@ unzip /tmp/backend.zip
 
 npm install &>> $LOG_FILE
 VALIDATE $? "Installing Dependencies"
+
+touch /etc/systemd/system/backend.service
 
 cp $SCRIPT_DIR/backend.conf /etc/systemd/system/backend.service &>> $LOG_FILE
 
