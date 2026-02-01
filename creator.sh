@@ -16,59 +16,50 @@ N="\e[0m"
 
 for service in $@
 do
-   EXISTING_ID=$(
-    aws ec2 describe-instances \
-     --filters "Name=tag:Name,Values=$service" \
-     "Name=instance-state-name,Values=running"
-     --query 'Reservations[].Instances[].InstanceId' \ 
-     --output text)
+EXISTING_ID=$(aws ec2 describe-instances \
+  --filters "Name=tag:Name,Values=$service" "Name=instance-state-name,Values=running" \
+  --query 'Reservations[].Instances[].InstanceId' \
+  --output text)
 
-   if [ -n "${EXISTING_ID}" ]; then
-      INSTANCE_ID=$EXISTING_ID
-      echo -e " $G ${service} instance is already present. $Y Skipping Creation.. $N "
-      continue
-   else
-    if [ "$service" == "mysql" ]; then
+if [ -n "$EXISTING_ID" ]; then
+  INSTANCE_ID=$EXISTING_ID
+  echo -e " $G ${service} instance is already present. $Y Skipping Creation.. $N "
+  continue
+else
+  if [ "$service" == "mysql" ]; then
     INSTANCE_ID=$(aws ec2 run-instances \
-    --image-id $AMI_ID \
-    --instance-type t3.medium \
-    --security-group-ids $SG_ID \
-    --tag-specifications "ResourceType=instance,Tags=[{Key=Name,Value=$service}]" \
-    --query 'Instances[0].InstanceId' \
-    --output text)
-    else 
+      --image-id $AMI_ID \
+      --instance-type t3.medium \
+      --security-group-ids $SG_ID \
+      --tag-specifications "ResourceType=instance,Tags=[{Key=Name,Value=$service}]" \
+      --query 'Instances[0].InstanceId' \
+      --output text)
+  else
     INSTANCE_ID=$(aws ec2 run-instances \
-    --image-id $AMI_ID \
-    --instance-type t3.micro \
-    --security-group-ids $SG_ID \
-    --tag-specifications "ResourceType=instance,Tags=[{Key=Name,Value=$service}]" \
-    --query 'Instances[0].InstanceId' \
-    --output text)
-    fi
+      --image-id $AMI_ID \
+      --instance-type t3.micro \
+      --security-group-ids $SG_ID \
+      --tag-specifications "ResourceType=instance,Tags=[{Key=Name,Value=$service}]" \
+      --query 'Instances[0].InstanceId' \
+      --output text)
+  fi
 fi
 
-if [ "$service" == 'frontend' ]; then
-    IP=$(
-     aws ec2 describe-instances \
+if [ "$service" == "frontend" ]; then
+  IP=$(aws ec2 describe-instances \
     --filters "Name=instance-id,Values=$INSTANCE_ID" \
     --query 'Reservations[].Instances[].PublicIpAddress' \
-    --output text
-    )
-    DNS_RECORD=$DOMAIN_NAME
-
-    else
-    IP=$(
-        aws ec2 describe-instances \
+    --output text)
+  DNS_RECORD=$service.$DOMAIN_NAME
+else
+  IP=$(aws ec2 describe-instances \
     --filters "Name=instance-id,Values=$INSTANCE_ID" \
     --query 'Reservations[].Instances[].PrivateIpAddress' \
-    --output text
-    )
-    DNS_RECORD=$service.$DOMAIN_NAME
+    --output text)
+  DNS_RECORD=$service.$DOMAIN_NAME
 fi
 
-aws route53 change-resource-record-sets --hosted-zone-id $ZONE_ID --change-batch "
-
-{
+aws route53 change-resource-record-sets --hosted-zone-id $ZONE_ID --change-batch "{
   \"Comment\": \"Creating A record for $service\",
   \"Changes\": [
     {
@@ -83,11 +74,6 @@ aws route53 change-resource-record-sets --hosted-zone-id $ZONE_ID --change-batch
       }
     }
   ]
-}
-
-"
-echo "record updated for $service"
-
-
+}"
 
 done
